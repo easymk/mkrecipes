@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MKRECIPES</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-logo">
+        <h1>MK<span class="brand-part">RECIPE</span></h1>
+      </div>
+
+      <div class="search-bar">
+        <form action="#">
+          <input type="search" placeholder="Search..." class="search-btn" />
+        </form>
+      </div>
+    </header>
+
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1>
+          Taste <span class="hero-special">Something </span> New
+        </h1>
+      </div>
+      <div class="meal-img" id="hero-meal-image"></div>
+    </div>
+
+    <div class="categories-section">
+      <div class="content-categories">
+        <h1>Recipes</h1>
+      </div>
+
+      <div class="categories-card">
+        <p>All types</p>
+        <p>Sea foods</p>
+        <p>Rice</p>
+        <p>Salad</p>
+      </div>
+    </div>
+
+    <div class="meal-cards" id="meal-container"></div>
+  </div>
+
+  <div class="instruction-panel" id="instruction-panel">
+    <div class="panel-content">
+      <span id="close-panel">&times;</span>
+      <h2 id="panel-title"></h2>
+      <p id="panel-text"></p>
+    </div>
+  </div>
+
+    <div class="loader" id="loader"></div>
+
+  <script src="script.js"></script>
+</body> 
+</html>
