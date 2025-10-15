@@ -25,18 +25,26 @@ function hideLoader() {
 
 
 
-function getHeroMeals() {
-  for (let i = 0; i < 5; i++) {
-    fetch(RandomMeal)
-      .then(res => res.json())
-      .then(response => {
-        const meal = response.meals[0];
-        const img = document.createElement("img");
-        img.src = meal.strMealThumb;
-        img.alt = meal.strMeal;
-        heromeals.appendChild(img);
-      })
-      .catch(err => console.error("Hero fetch error:", err));
+async function getHeroMeals() {
+  try {
+
+    for (let i = 0; i < 5; i++) {
+
+      const res = await fetch(RandomMeal); 
+      const response = await res.json();   
+
+      const meal = response.meals[0];      
+
+      const img = document.createElement("img");
+      img.src = meal.strMealThumb;
+      img.alt = meal.strMeal;
+
+      heromeals.appendChild(img);
+          
+    }
+  } catch (error) {
+
+    console.error("Hero fetch error:", error); 
   }
 }
 
@@ -44,79 +52,91 @@ getHeroMeals();
 
 
 
-function getcards(query = "") {
-  showLoader();
-  mealContainer.innerHTML = "";
 
-  const url = query ? `${SearchMeal}${query}` : RandomMeal;
+async function getcards(query = "") {
+  try {
+    showLoader(); 
+    mealContainer.innerHTML = "";
 
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      hideLoader();
+    const url = query ? `${SearchMeal}${query}` : RandomMeal;
 
-      const meals = query ? data.meals : [data.meals[0]];
+    
+    const res = await fetch(url);
+    const data = await res.json();
 
-      if (!meals) {
-        mealContainer.innerHTML = "<p>No recipes found.</p>";
-        return;
-      }
+    hideLoader(); 
 
-      meals.forEach((meal) => {
-        const carddiv = document.createElement("div");
-        carddiv.classList.add("card-1");
+  
+    const meals = query ? data.meals : [data.meals[0]];
 
-        const mealtitle = document.createElement("h4");
-        mealtitle.textContent = meal.strMeal;
+    if (!meals) {
+      mealContainer.innerHTML = "<p>No recipes found.</p>";
+      return;
+    }
 
-        const mealcardimg = document.createElement("img");
-        mealcardimg.src = meal.strMealThumb;
-        mealcardimg.alt = meal.strMeal;
+  
+    meals.forEach((meal) => {
+      const carddiv = document.createElement("div");
+      carddiv.classList.add("card-1");
 
-        const cardBtns = document.createElement("div");
-        cardBtns.classList.add("card-btns");
+      const mealtitle = document.createElement("h4");
+      mealtitle.textContent = meal.strMeal;
 
-        const cardbtn1 = document.createElement("button");
-        cardbtn1.textContent = "View Instructions";
+      const mealcardimg = document.createElement("img");
+      mealcardimg.src = meal.strMealThumb;
+      mealcardimg.alt = meal.strMeal;
 
-        const cardbtn2 = document.createElement("button");
-        cardbtn2.textContent = "See Ingredient";
+      const cardBtns = document.createElement("div");
+      cardBtns.classList.add("card-btns");
 
-        cardbtn1.addEventListener("click", () => {
-          panelTitle.textContent = meal.strMeal;
-          panelText.textContent = meal.strInstructions;
-          panel.classList.add("active");
-        });
+      const cardbtn1 = document.createElement("button");
+      cardbtn1.textContent = "View Instructions";
 
-        cardbtn2.addEventListener("click", () => {
-          const ingredients = [];
-          for (let i = 1; i <= 20; i++) {
-            const ing = meal[`strIngredient${i}`];
-            const measure = meal[`strMeasure${i}`];
-            if (ing) ingredients.push(`${ing} - ${measure}`);
-          }
-          panelTitle.textContent = meal.strMeal + " Ingredients";
-          panelText.innerHTML = ingredients.join("<br>");
-          panel.classList.add("active");
-        });
+      const cardbtn2 = document.createElement("button");
+      cardbtn2.textContent = "See Ingredient";
 
-        cardBtns.appendChild(cardbtn1);
-        cardBtns.appendChild(cardbtn2);
-
-        carddiv.appendChild(mealtitle);
-        carddiv.appendChild(mealcardimg);
-        carddiv.appendChild(cardBtns);
-
-        mealContainer.appendChild(carddiv);
+      cardbtn1.addEventListener("click", () => {
+        panelTitle.textContent = meal.strMeal;
+        panelText.textContent = meal.strInstructions;
+        panel.classList.add("active");
       });
-    })
-    .catch(error => {
-      console.error("Error fetching meals:", error);
-      hideLoader();
+
+
+      cardbtn2.addEventListener("click", () => {
+        const ingredients = [];
+        for (let i = 1; i <= 20; i++) {
+          const ing = meal[`strIngredient${i}`];
+          const measure = meal[`strMeasure${i}`];
+          if (ing) ingredients.push(`${ing} - ${measure}`);
+        }
+        panelTitle.textContent = meal.strMeal + " Ingredients";
+        panelText.innerHTML = ingredients.join("<br>");
+        panel.classList.add("active");
+      });
+
+      cardBtns.appendChild(cardbtn1);
+      cardBtns.appendChild(cardbtn2);
+
+      carddiv.appendChild(mealtitle);
+      carddiv.appendChild(mealcardimg);
+      carddiv.appendChild(cardBtns);
+
+      mealContainer.appendChild(carddiv);
     });
+
+  } catch (error) {
+    console.error("Error fetching meals:", error);
+    hideLoader(); 
+  }
 }
 
 
+
+function test(s){
+  console.log(s)
+}
+
+test();
 
 function loadInitialMeals() {
   mealContainer.innerHTML = "";
