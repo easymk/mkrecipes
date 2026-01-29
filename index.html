@@ -1,61 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MKRECIPES</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MK Recipes - Unlimited</title>
+    
+    <meta name="description" content="Infinite recipes with Dark Mode and Favorites. AI Chef included." />
+    <link rel="preconnect" href="https://www.themealdb.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+     
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand-logo">
-        <h1>MK<span class="brand-part">RECIPE</span></h1>
-      </div>
 
-      <div class="search-bar">
-        <form action="#">
-          <input type="search" placeholder="Search..." class="search-btn" />
-        </form>
-      </div>
-    </header>
+    <nav>
+        <div class="brand">MK<span>RECIPES</span></div>
+        
+        <div class="search-wrap">
+            <input type="text" id="main-search" placeholder="Search recipe..." autocomplete="off">
 
-    <div class="hero-section">
-      <div class="hero-content">
-        <h1>
-          Taste <span class="hero-special">Something </span> New
-        </h1>
-      </div>
-      <div class="meal-img" id="hero-meal-image"></div>
+            <div id="search-suggestions" class="suggestions-box"></div>
+            <i class="fas fa-search" style="color:var(--primary)"></i>
+        </div>
+
+        <div class="nav-icons">
+            <div class="icon-btn" onclick="toggleTheme()" id="theme-btn"><i class="fas fa-moon"></i></div>
+            <div class="icon-btn" onclick="setCategory('saved', this)"><i class="fas fa-heart"></i></div>
+        </div>
+    </nav>
+
+    <div class="cat-container">
+        <div class="main-cats">
+            <div class="cat-btn active" onclick="setCategory('all', this)">
+                <div class="cat-icon"><i class="fas fa-fire"></i></div>
+                <div class="cat-name">Trending</div>
+            </div>
+            <div class="cat-btn" onclick="setCategory('chicken', this)">
+                <div class="cat-icon"><i class="fas fa-drumstick-bite"></i></div>
+                <div class="cat-name">Chicken</div>
+            </div>
+            <div class="cat-btn" onclick="setCategory('beef', this)">
+                <div class="cat-icon"><i class="fas fa-hamburger"></i></div>
+                <div class="cat-name">Beef</div>
+            </div>
+            <div class="cat-btn" onclick="setCategory('dessert', this)">
+                <div class="cat-icon"><i class="fas fa-cookie-bite"></i></div>
+                <div class="cat-name">Sweets</div>
+            </div>
+            <div class="cat-btn" onclick="setCategory('veg', this)">
+                <div class="cat-icon"><i class="fas fa-carrot"></i></div>
+                <div class="cat-name">Veg</div>
+            </div>
+            <div class="cat-btn" onclick="setCategory('saved', this)">
+                <div class="cat-icon"><i class="fas fa-bookmark"></i></div>
+                <div class="cat-name">Saved</div>
+            </div>
+        </div>
+        <div class="sub-cats" id="sub-cats"></div>
     </div>
 
-    <div class="categories-section">
-      <div class="content-categories">
-        <h1>Recipes</h1>
-      </div>
+    <main class="main-content">
+        <h2 id="grid-title" style="margin-bottom:20px;">Recipes</h2>
+        
+        <div class="meal-grid" id="grid"></div>
 
-      <div class="categories-card">
-        <p>All types</p>
-        <p>Sea foods</p>
-        <p>Rice</p>
-        <p>Salad</p>
-      </div>
+        <div class="btn-container">
+            <button class="btn-show" id="load-more-btn" onclick="loadMore()">Show More</button>
+        </div>
+    </main>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="close-btn" onclick="closeModal()">&times;</div>
+            <img id="m-img" style="width:100%; height:300px; object-fit:cover;">
+            <div style="padding:25px;">
+                <h2 id="m-title" style="font-size:1.8rem; margin-bottom:5px;"></h2>
+                <p style="color:var(--text-sub); margin-bottom:20px;">
+                    <span id="m-area"></span> • <span id="m-cat"></span>
+                </p>
+                
+                <h3>Ingredients</h3>
+                <ul id="m-ing" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0;"></ul>
+                
+                <h3>Instructions</h3>
+                <p id="m-inst" style="line-height:1.7; color:var(--text-sub); margin-bottom:20px;"></p>
+                
+                <div id="m-video-box" style="width:100%; height:250px; border-radius:12px; overflow:hidden; background:black; display:none;"></div>
+                
+                <button onclick="askAiSpecific()" style="width:100%; padding:15px; margin-top:20px; background:var(--text-main); color:var(--bg-card); border:none; border-radius:10px; font-weight:600;">
+                    <i class="fas fa-robot"></i> Ask AI about this dish
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="meal-cards" id="meal-container"></div>
-  </div>
-
-  <div class="instruction-panel" id="instruction-panel">
-    <div class="panel-content">
-      <span id="close-panel">&times;</span>
-      <h2 id="panel-title"></h2>
-      <p id="panel-text"></p>
+    <div class="ai-fab" onclick="toggleChat()">
+        <i class="fas fa-robot"></i> Chef AI
     </div>
-  </div>
+    <div class="chat-box" id="chat-box">
+        <div style="background:var(--primary); color:white; padding:15px; display:flex; justify-content:space-between;">
+            <span>Chef Assistant</span><span onclick="toggleChat()" style="cursor:pointer">&times;</span>
+        </div>
+        <div class="chat-msgs" id="chat-msgs">
+            <div class="msg bot">Hello! I'm your AI Chef. Ask me anything!</div>
+        </div>
+        <div style="padding:10px; border-top:1px solid var(--border); display:flex;">
+            <input type="text" id="ai-input" placeholder="Type here..." style="flex:1; border:none; outline:none; background:transparent; color:var(--text-main);">
+            <button onclick="sendAi()" style="background:var(--text-main); color:var(--bg-card); border:none; width:35px; height:35px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="https://js.puter.com/v2/"></script>
 
-    <div class="loader" id="loader"></div>
-
-  <script src="script.js"></script>
-</body> 
+</body>
 </html>
