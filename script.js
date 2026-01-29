@@ -1,165 +1,348 @@
-const RandomMeal = "https://www.themealdb.com/api/json/v1/1/random.php";
-const SearchMeal = "https://www.themealdb.com/api/json/v1/1/search.php?s=";
+const API_BASE = "https://www.themealdb.com/api/json/v1/1/";
 
-const heromeals = document.querySelector("#hero-meal-image");
-const mealContainer = document.querySelector("#meal-container");
-const loader = document.querySelector("#loader");
-const searchInput = document.querySelector(".search-btn");
+        const subCategories = {
+            'all': [],
+            'chicken': ['Chicken_Biryani', 'Fried_Chicken', 'Chicken_Curry', 'Tikka', 'Kebab'],
+            'beef': ['Steak', 'Burger', 'Roast_Beef', 'Pie', 'Wellington'],
+            'seafood': ['Shrimp', 'Salmon', 'Fish', 'Lobster', 'Sushi'],
+            'dessert': ['Cake', 'Chocolate', 'Ice_Cream', 'Donut', 'Pie'],
+            'veg': ['Salad', 'Corn', 'Potato', 'Spinach', 'Pasta'],
+        };
 
-const panel = document.querySelector("#instruction-panel");
-const panelTitle = document.querySelector("#panel-title");
-const panelText = document.querySelector("#panel-text");
-const closePanel = document.querySelector("#close-panel");
+        let currentMode = 'random';
+        let filterIds = [];
+        let displayCount = 0;
+        let isFetching = false;
+        let totalRendered = 0;
+        let favorites = JSON.parse(localStorage.getItem('mk_favs')) || [];
 
+        const grid = document.getElementById('grid');
+        const loadBtn = document.getElementById('load-more-btn');
 
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+            loadMore();
+        };
 
-function showLoader() {
-  loader.style.display = "flex";
-  mealContainer.style.opacity = "0.4"; 
-}
-
-function hideLoader() {
-  loader.style.display = "none";
-  mealContainer.style.opacity = "1";
-}
-
-
-
-async function getHeroMeals() {
-  try {
-
-    for (let i = 0; i < 5; i++) {
-
-      const res = await fetch(RandomMeal); 
-      const response = await res.json();   
-
-      const meal = response.meals[0];      
-
-      const img = document.createElement("img");
-      img.src = meal.strMealThumb;
-      img.alt = meal.strMeal;
-
-      heromeals.appendChild(img);
-          
-    }
-  } catch (error) {
-
-    console.error("Hero fetch error:", error); 
-  }
-}
-
-getHeroMeals();
-
-
-
-
-async function getcards(query = "") {
-  try {
-    showLoader(); 
-    mealContainer.innerHTML = "";
-
-    const url = query ? `${SearchMeal}${query}` : RandomMeal;
-
-    
-    const res = await fetch(url);
-    const data = await res.json();
-
-    hideLoader(); 
-
-  
-    const meals = query ? data.meals : [data.meals[0]];
-
-    if (!meals) {
-      mealContainer.innerHTML = "<p>No recipes found.</p>";
-      return;
-    }
-
-  
-    meals.forEach((meal) => {
-      const carddiv = document.createElement("div");
-      carddiv.classList.add("card-1");
-
-      const mealtitle = document.createElement("h4");
-      mealtitle.textContent = meal.strMeal;
-
-      const mealcardimg = document.createElement("img");
-      mealcardimg.src = meal.strMealThumb;
-      mealcardimg.alt = meal.strMeal;
-
-      const cardBtns = document.createElement("div");
-      cardBtns.classList.add("card-btns");
-
-      const cardbtn1 = document.createElement("button");
-      cardbtn1.textContent = "View Instructions";
-
-      const cardbtn2 = document.createElement("button");
-      cardbtn2.textContent = "See Ingredient";
-
-      cardbtn1.addEventListener("click", () => {
-        panelTitle.textContent = meal.strMeal;
-        panelText.textContent = meal.strInstructions;
-        panel.classList.add("active");
-      });
-
-
-      cardbtn2.addEventListener("click", () => {
-        const ingredients = [];
-        for (let i = 1; i <= 20; i++) {
-          const ing = meal[`strIngredient${i}`];
-          const measure = meal[`strMeasure${i}`];
-          if (ing) ingredients.push(`${ing} - ${measure}`);
+        function toggleTheme() {
+            if(document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
         }
-        panelTitle.textContent = meal.strMeal + " Ingredients";
-        panelText.innerHTML = ingredients.join("<br>");
-        panel.classList.add("active");
-      });
 
-      cardBtns.appendChild(cardbtn1);
-      cardBtns.appendChild(cardbtn2);
+        function toggleFav(e, id, img, title, cat) {
+            e.stopPropagation();
+            const index = favorites.findIndex(f => f.id === id);
+            
+            if(index === -1) {
+                favorites.push({ id, img, title, cat });
+                e.target.closest('.fav-btn').classList.add('active');
+            } else {
+                favorites.splice(index, 1);
+                e.target.closest('.fav-btn').classList.remove('active');
+                if(currentMode === 'saved') {
+                    e.target.closest('.card').remove();
+                }
+            }
+            localStorage.setItem('mk_favs', JSON.stringify(favorites));
+        }
 
-      carddiv.appendChild(mealtitle);
-      carddiv.appendChild(mealcardimg);
-      carddiv.appendChild(cardBtns);
+        function isFav(id) {
+            return favorites.some(f => f.id === id);
+        }
 
-      mealContainer.appendChild(carddiv);
-    });
+        async function fetchAPI(url) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                return data.meals || [];
+            } catch { return []; }
+        }
 
-  } catch (error) {
-    console.error("Error fetching meals:", error);
-    hideLoader(); 
-  }
-}
+        function showSkeletons() {
+            let html = '';
+            for(let i=0; i<4; i++) {
+                html += `<div class="skeleton-card"><div class="sk-img sk-anim"></div><div class="sk-text sk-anim"></div></div>`;
+            }
+            const temp = document.createElement('div');
+            temp.id = 'temp-skel';
+            temp.style.display = 'contents';
+            temp.innerHTML = html;
+            grid.appendChild(temp);
+        }
 
+        async function loadMore() {
+            if(isFetching) return;
+            isFetching = true;
+            loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            showSkeletons();
 
+            let mealsToRender = [];
 
-function test(s){
-  console.log(s)
-}
+            if(currentMode === 'random') {
+                const promises = Array(8).fill().map(() => fetchAPI(`${API_BASE}random.php`));
+                const results = await Promise.all(promises);
+                mealsToRender = results.map(r => r[0]).filter(Boolean);
+            } 
+            else if(currentMode === 'saved') {
+                mealsToRender = []; 
+            }
+            else {
+                if(displayCount >= filterIds.length) {
+                    document.getElementById('temp-skel').remove();
+                    loadBtn.style.display = 'none';
+                    isFetching = false;
+                    return;
+                }
+                mealsToRender = filterIds.slice(displayCount, displayCount + 8);
+                displayCount += 8;
+                if(displayCount >= filterIds.length) loadBtn.style.display = 'none';
+            }
 
-test();
+            document.getElementById('temp-skel').remove();
+            renderMeals(mealsToRender);
+            loadBtn.innerHTML = 'Show More';
+            isFetching = false;
+        }
 
-function loadInitialMeals() {
-  mealContainer.innerHTML = "";
-  for (let i = 0; i < 8; i++) {
-    getcards();
-  }
-}
+        function renderMeals(meals) {
+            meals.forEach(meal => {
+                totalRendered++;
+                
+                const id = meal.idMeal;
+                const thumb = meal.strMealThumb;
+                const title = meal.strMeal;
+                const cat = meal.strCategory || 'Delicious';
+                
+                const favClass = isFav(id) ? 'active' : '';
 
-loadInitialMeals();
+                let vidBadge = '';
+                if(meal.strYoutube) vidBadge = `<div class="yt-badge"><i class="fas fa-play"></i></div>`;
 
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="img-wrapper">
+                        <img src="${thumb}" class="card-img" loading="lazy">
+                        <div class="card-actions">
+                            <div class="fav-btn ${favClass}" onclick="toggleFav(event, '${id}', '${thumb}', '${title}', '${cat}')">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                        </div>
+                        ${vidBadge}
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${title}</div>
+                        <div class="card-meta">${cat}</div>
+                    </div>
+                `;
+                card.onclick = (e) => {
+                    if(!e.target.closest('.fav-btn')) openModal(id);
+                };
+                grid.appendChild(card);
+            });
+        }
 
+        async function setCategory(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            const subBox = document.getElementById('sub-cats');
+            const subs = subCategories[cat] || [];
+            subBox.innerHTML = subs.length ? subs.map(s => `<div class="chip" onclick="searchSpecific('${s}', this)">${s.replace(/_/g, ' ')}</div>`).join('') : '';
+            subBox.style.display = subs.length ? 'flex' : 'none';
 
-searchInput.addEventListener("input", (e) => {
-  const value = e.target.value.trim();
-  if (value.length >= 2) {
-    getcards(value);
-  } else if (value.length === 0) {
-    loadInitialMeals();
-  }
-});
+            grid.innerHTML = '';
+            totalRendered = 0;
+            displayCount = 0;
+            loadBtn.style.display = 'inline-block';
 
+            if(cat === 'saved') {
+                currentMode = 'saved';
+                document.getElementById('grid-title').textContent = "My Saved Recipes";
 
+                const savedMeals = favorites.map(f => ({
+                    idMeal: f.id,
+                    strMealThumb: f.img,
+                    strMeal: f.title,
+                    strCategory: f.cat
+                }));
+                if(savedMeals.length === 0) grid.innerHTML = '<p style="padding:20px">No saved recipes yet.</p>';
+                else renderMeals(savedMeals);
+                loadBtn.style.display = 'none'; 
+            }
+            else if(cat === 'all') {
+                currentMode = 'random';
+                document.getElementById('grid-title').textContent = "Trending Now";
+                loadMore();
+            } 
+            else {
+                currentMode = 'filter';
+                document.getElementById('grid-title').textContent = cat.toUpperCase() + " Recipes";
+                const url = `${API_BASE}filter.php?c=${cat === 'veg' ? 'Vegetarian' : cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+                const data = await fetchAPI(url);
+                
+                if(!data.length) {
+                    const sData = await fetchAPI(`${API_BASE}search.php?s=${cat}`);
+                    filterIds = sData;
+                } else {
+                    filterIds = data;
+                }
+                loadMore();
+            }
+        }
 
-closePanel.addEventListener("click", () => {
-  panel.classList.remove("active");
-});
+        async function searchSpecific(term, btn) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            grid.innerHTML = '';
+            displayCount = 0;
+            currentMode = 'filter'; 
+            document.getElementById('grid-title').textContent = `Results: ${term}`;
+            
+            document.getElementById('search-suggestions').classList.remove('active');
+            document.getElementById('main-search').value = term;
+
+            const data = await fetchAPI(`${API_BASE}search.php?s=${term}`);
+            filterIds = data;
+            loadBtn.style.display = 'inline-block';
+            loadMore();
+        }
+
+        const modal = document.getElementById('modal');
+        async function openModal(id) {
+            const data = await fetchAPI(`${API_BASE}lookup.php?i=${id}`);
+            const meal = data[0];
+
+            document.getElementById('m-img').src = meal.strMealThumb;
+            document.getElementById('m-title').textContent = meal.strMeal;
+            document.getElementById('m-area').textContent = meal.strArea;
+            document.getElementById('m-cat').textContent = meal.strCategory;
+            document.getElementById('m-inst').innerHTML = meal.strInstructions.replace(/\r\n/g, '<br><br>');
+
+            const ul = document.getElementById('m-ing');
+            ul.innerHTML = '';
+            for(let i=1; i<=20; i++) {
+                if(meal[`strIngredient${i}`]) ul.innerHTML += `<li>${meal[`strIngredient${i}`]} - <b>${meal[`strMeasure${i}`]}</b></li>`;
+            }
+
+            const vidBox = document.getElementById('m-video-box');
+            if(meal.strYoutube && meal.strYoutube.includes("v=")) {
+                const vidId = meal.strYoutube.split('v=')[1];
+                vidBox.style.display = 'block';
+                vidBox.innerHTML = `<iframe src="https://www.youtube.com/embed/${vidId}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                vidBox.style.display = 'none';
+                vidBox.innerHTML = '';
+            }
+            modal.classList.add('active');
+        }
+        function closeModal() { modal.classList.remove('active'); document.getElementById('m-video-box').innerHTML = ''; }
+
+        const chatBox = document.getElementById('chat-box');
+        const chatMsgs = document.getElementById('chat-msgs');
+        function toggleChat() { chatBox.classList.toggle('active'); }
+        
+        function askAiSpecific() {
+            closeModal();
+            toggleChat();
+            const dish = document.getElementById('m-title').textContent;
+            sendAi(`How to cook ${dish}?`);
+        }
+
+        // --- UPDATED AI FUNCTION WITH STREAMING AND FLASH MODEL ---
+        async function sendAi(query) {
+            const input = document.getElementById('ai-input');
+            const txt = query || input.value.trim();
+            if(!txt) return;
+
+            // 1. User Message Add karo
+            const userDiv = document.createElement('div');
+            userDiv.className = 'msg user';
+            userDiv.textContent = txt;
+            chatMsgs.appendChild(userDiv);
+            
+            input.value = '';
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+            // 2. Bot Message ka container banao (abhi khali)
+            const botDiv = document.createElement('div');
+            botDiv.className = 'msg bot';
+            botDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; // Loading icon
+            chatMsgs.appendChild(botDiv);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+            try {
+                // 3. Puter API call karo (Streaming + Fast Model)
+                const responseStream = await puter.ai.chat(
+                    "You are a professional chef. Keep it short. Advice for: " + txt,
+                    { model: 'gemini-2.5-flash', stream: true } 
+                );
+
+                // Loading icon hatao
+                botDiv.innerHTML = '';
+
+                // 4. Stream se data padho aur foran print karo
+                for await (const part of responseStream) {
+                    if (part?.text) {
+                        // Text ko safe tareeke se add karo aur new lines handle karo
+                        botDiv.innerHTML += part.text.replace(/\n/g, '<br>');
+                        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+                    }
+                }
+
+            } catch(e) { 
+                console.error(e);
+                botDiv.innerHTML = "Chef is currently offline."; 
+            }
+        }
+    
+        const searchInput = document.getElementById('main-search');
+        const suggestionsBox = document.getElementById('search-suggestions');
+        let debounceTimer;
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearTimeout(debounceTimer);
+            
+            if (query.length === 0) {
+                suggestionsBox.classList.remove('active');
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                const data = await fetchAPI(`${API_BASE}search.php?s=${query}`);
+                
+                if (data && data.length > 0) {
+                    const html = data.slice(0, 6).map(item => `
+                        <div class="sugg-item" onclick="searchSpecific('${item.strMeal.replace(/'/g, "\\'")}', null)">
+                            <img src="${item.strMealThumb}" class="sugg-img">
+                            <span>${item.strMeal}</span>
+                        </div>
+                    `).join('');
+                    
+                    suggestionsBox.innerHTML = html;
+                    suggestionsBox.classList.add('active');
+                } else {
+                    suggestionsBox.classList.remove('active');
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.classList.remove('active');
+            }
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                suggestionsBox.classList.remove('active');
+                searchSpecific(e.target.value);
+            }
+        });
