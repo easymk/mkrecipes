@@ -3,39 +3,81 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MK Recipes - Unlimited</title>
     
-    <meta name="description" content="Infinite recipes with Dark Mode and Favorites. AI Chef included." />
+    <title>MK Recipes - Search Unlimited Easy Food Recipes & AI Chef</title>
+    <meta name="description" content="Discover infinite food recipes including Chicken, Beef, Veg, and Desserts with MK Recipes." />
+    <meta name="keywords" content="recipes, food, cooking, ai chef, mk recipes, chicken recipes, veg recipes, dessert recipes, easy cooking" />
+    <meta name="author" content="MK Recipes" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://easymkrecipes.netlify.app/" />
+    <meta property="og:title" content="MK Recipes - Search Unlimited Easy Food Recipes Online" />
+    <meta property="og:description" content="Get infinite food recipes with MK Recipes. Features Dark Mode and AI Chef assistance for easy cooking." />
+    <meta property="og:image" content="https://iili.io/fsIjZKl.jpg" />
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MK Recipes - Best Online Food Recipe Finder">
+<meta name="twitter:description" content="Get infinite food recipes with MK Recipes. Features Dark Mode and AI Chef assistance for easy cooking.">
+<meta name="twitter:image" content="https://iili.io/fsIjZKl.jpg">
+
+<link rel="canonical" href="https://easymkrecipes.netlify.app/" />
+    
     <meta name="google-site-verification" content="dlpOmxvcWllGY92B1qk6gR6MOLEQX9Qk8aXxjcE15vU" />
+
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "MK Recipes",
+        "url": "https://easymkrecipes.netlify.app/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://easymkrecipes.netlify.app/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Recipe",
+        "name": "MK Recipes - Ultimate Food Collection",
+        "author": { "@type": "Person", "name": "MK" },
+        "description": "Infinite recipes for chicken, beef, veg and desserts with AI Chef guidance.",
+        "recipeCategory": "General",
+        "keywords": "cooking, recipes, ai chef, homemade food"
+      }
+    ]
+    </script>
+
     <link rel="preconnect" href="https://www.themealdb.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
-     
 </head>
 <body>
+
+    <h1 style="position:absolute; left:-9999px; overflow:hidden;">MK Recipes - Best Online Food Recipe Finder with AI Assistant</h1>
 
     <nav>
         <div class="brand">MK<span>RECIPES</span></div>
         
         <div class="search-wrap">
-            <input type="text" id="main-search" placeholder="Search recipe..." autocomplete="off">
-
+            <input type="text" id="main-search" placeholder="Search recipe..." title="Search for recipes" autocomplete="off">
             <div id="search-suggestions" class="suggestions-box"></div>
-            <i class="fas fa-search" style="color:var(--primary)"></i>
+            <i class="fas fa-search" style="color:var(--primary)" aria-hidden="true"></i>
         </div>
 
         <div class="nav-icons">
-            <div class="icon-btn" onclick="toggleTheme()" id="theme-btn"><i class="fas fa-moon"></i></div>
-            <div class="icon-btn" onclick="setCategory('saved', this)"><i class="fas fa-heart"></i></div>
+            <div class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle Dark Mode"><i class="fas fa-moon"></i></div>
+            <div class="icon-btn" onclick="setCategory('saved', this)" title="My Saved Recipes"><i class="fas fa-heart"></i></div>
         </div>
     </nav>
 
     <div class="cat-container">
-        <div class="main-cats">
+        <div class="main-cats" role="navigation" aria-label="Recipe Categories">
             <div class="cat-btn active" onclick="setCategory('all', this)">
                 <div class="cat-icon"><i class="fas fa-fire"></i></div>
                 <div class="cat-name">Trending</div>
@@ -65,29 +107,29 @@
     </div>
 
     <main class="main-content">
-        <h2 id="grid-title" style="margin-bottom:20px;">Recipes</h2>
+        <h2 id="grid-title" style="margin-bottom:20px;">Top Food Recipes</h2>
         
         <div class="meal-grid" id="grid"></div>
 
         <div class="btn-container">
-            <button class="btn-show" id="load-more-btn" onclick="loadMore()">Show More</button>
+            <button class="btn-show" id="load-more-btn" onclick="loadMore()" aria-label="Load more recipes">Show More Recipes</button>
         </div>
     </main>
 
-    <div class="modal" id="modal">
+    <div class="modal" id="modal" aria-hidden="true">
         <div class="modal-content">
-            <div class="close-btn" onclick="closeModal()">&times;</div>
-            <img id="m-img" style="width:100%; height:300px; object-fit:cover;">
+            <div class="close-btn" onclick="closeModal()" aria-label="Close modal">&times;</div>
+            <img id="m-img" src="" alt="Recipe Detail Image" style="width:100%; height:300px; object-fit:cover;">
             <div style="padding:25px;">
                 <h2 id="m-title" style="font-size:1.8rem; margin-bottom:5px;"></h2>
                 <p style="color:var(--text-sub); margin-bottom:20px;">
                     <span id="m-area"></span> • <span id="m-cat"></span>
                 </p>
                 
-                <h3>Ingredients</h3>
+                <h3>Ingredients for Recipe</h3>
                 <ul id="m-ing" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0;"></ul>
                 
-                <h3>Instructions</h3>
+                <h3>Cooking Instructions</h3>
                 <p id="m-inst" style="line-height:1.7; color:var(--text-sub); margin-bottom:20px;"></p>
                 
                 <div id="m-video-box" style="width:100%; height:250px; border-radius:12px; overflow:hidden; background:black; display:none;"></div>
@@ -99,19 +141,19 @@
         </div>
     </div>
 
-    <div class="ai-fab" onclick="toggleChat()">
+    <div class="ai-fab" onclick="toggleChat()" role="button" aria-label="Open AI Chef Assistant">
         <i class="fas fa-robot"></i> Chef AI
     </div>
     <div class="chat-box" id="chat-box">
         <div style="background:var(--primary); color:white; padding:15px; display:flex; justify-content:space-between;">
-            <span>Chef Assistant</span><span onclick="toggleChat()" style="cursor:pointer">&times;</span>
+            <span>MK AI Chef Assistant</span><span onclick="toggleChat()" style="cursor:pointer">&times;</span>
         </div>
         <div class="chat-msgs" id="chat-msgs">
-            <div class="msg bot">Hello! I'm your AI Chef. Ask me anything!</div>
+            <div class="msg bot">Hello! I'm your AI Chef. How can I help you cook today?</div>
         </div>
         <div style="padding:10px; border-top:1px solid var(--border); display:flex;">
-            <input type="text" id="ai-input" placeholder="Type here..." style="flex:1; border:none; outline:none; background:transparent; color:var(--text-main);">
-            <button onclick="sendAi()" style="background:var(--text-main); color:var(--bg-card); border:none; width:35px; height:35px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="ai-input" placeholder="Ask recipes or tips..." style="flex:1; border:none; outline:none; background:transparent; color:var(--text-main);">
+            <button onclick="sendAi()" aria-label="Send Message" style="background:var(--text-main); color:var(--bg-card); border:none; width:35px; height:35px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
     <script src="script.js"></script>
