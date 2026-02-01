@@ -1,10 +1,10 @@
 :root {
-  --primary: #FF5500;
-  --bg-body: #F8F9FA;
-  --bg-card: #FFFFFF;
-  --text-main: #1F2937;
-  --text-sub: #6B7280;
-  --border: #E5E7EB;
+  --primary: #ff5500;
+  --bg-body: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-main: #1f2937;
+  --text-sub: #6b7280;
+  --border: #e5e7eb;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   --nav-bg: rgba(255, 255, 255, 0.95);
   --skeleton-base: #ececec;
@@ -13,28 +13,30 @@
 
 [data-theme="dark"] {
   --bg-body: #111827;
-  --bg-card: #1F2937;
-  --text-main: #F9FAFB;
-  --text-sub: #9CA3AF;
+  --bg-card: #1f2937;
+  --text-main: #f9fafb;
+  --text-sub: #9ca3af;
   --border: #374151;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   --nav-bg: rgba(31, 41, 55, 0.95);
   --skeleton-base: #374151;
-  --skeleton-highlight: #4B5563;
+  --skeleton-highlight: #4b5563;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Outfit', sans-serif;
+  font-family: "Outfit", sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background-color: var(--bg-body);
   color: var(--text-main);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   padding-bottom: 80px;
   overflow-x: hidden;
 }
@@ -105,7 +107,7 @@ nav {
   margin-top: 5px;
 }
 
-@media(min-width: 768px) {
+@media (min-width: 768px) {
   .search-wrap {
     max-width: 350px;
     order: 0;
@@ -186,7 +188,7 @@ nav {
   transition: background 0.3s;
 }
 
-@media(max-width: 768px) {
+@media (max-width: 768px) {
   .cat-container {
     top: 110px;
   }
@@ -309,7 +311,9 @@ nav {
   box-shadow: var(--shadow);
   cursor: pointer;
   position: relative;
-  transition: transform 0.3s ease, background 0.3s;
+  transition:
+    transform 0.3s ease,
+    background 0.3s;
 }
 
 .card:hover {
@@ -367,7 +371,7 @@ nav {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background: #FF0000;
+  background: #ff0000;
   color: white;
   width: 35px;
   height: 35px;
@@ -421,7 +425,10 @@ nav {
 }
 
 .sk-anim {
-  background: linear-gradient(110deg, var(--skeleton-base) 8%, var(--skeleton-highlight) 18%, var(--skeleton-base) 33%);
+  background: linear-gradient(110deg,
+      var(--skeleton-base) 8%,
+      var(--skeleton-highlight) 18%,
+      var(--skeleton-base) 33%);
   background-size: 200% 100%;
   animation: shine 1.5s linear infinite;
 }
@@ -571,6 +578,7 @@ nav {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -581,6 +589,7 @@ nav {
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -593,7 +602,7 @@ nav {
   }
 }
 
-@media(max-width: 600px) {
+@media (max-width: 600px) {
   .chat-box {
     width: 90%;
     right: 5%;
